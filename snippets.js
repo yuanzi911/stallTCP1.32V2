@@ -167,7 +167,7 @@ async function hSub(r,c,u,UA,h){
   let up=DEFAULT_SUB_DOMAIN.trim().replace(/^https?:\/\//,"").replace(/\/$/,"")||h,pip=u.searchParams.get("proxyip");if(!pip&&DEFAULT_PROXY_IP)pip=DEFAULT_PROXY_IP;
   let tp=(pip&&pip.trim())?`/proxyip=${pip.trim()}`:"/";
   const p=new URLSearchParams();p.append("uuid",UUID);p.append("host",up);p.append("sni",up);p.append("path",tp);p.append("type","ws");p.append("encryption","none");p.append("security","tls");p.append("alpn","h3");p.append("fp","random");p.append("allowInsecure","1");
-  try{const e=await fetch(`https://${up}/sub?${p.toString()}`,{headers:{"User-Agent":"Mozilla/5.0"}});if(e.ok){let t=atob(await e.text());t=t.replace(/path=[^&#]*/g,`path=${encodeURIComponent(tp)}`).replace(/host=[^&]*/g,`host=${h}`).replace(/sni=[^&]*/g,`sni=${h}`);return new Response(btoa(t),{status:200,headers:{"Content-Type":"text/plain; charset=utf-8"}});}}catch{}return new Response("",{status:200,headers:{"Content-Type":"text/plain; charset=utf-8"}});
+  try{const e=await fetch(`https://${up}/sub?${p.toString()}`,{headers:{"User-Agent":"Mozilla/5.0"}});if(e.ok){let t=atob(await e.text());t=t.replace(/path=[^&#]*/g,`path=${encodeURIComponent(tp)}&udp=false`).replace(/host=[^&]*/g,`host=${h}`).replace(/sni=[^&]*/g,`sni=${h}`);return new Response(btoa(t),{status:200,headers:{"Content-Type":"text/plain; charset=utf-8"}});}}catch{}return new Response("",{status:200,headers:{"Content-Type":"text/plain; charset=utf-8"}});
 }
 
 // =============================================================================
