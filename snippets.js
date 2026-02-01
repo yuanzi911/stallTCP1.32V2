@@ -4,8 +4,8 @@ import { connect } from 'cloudflare:sockets';
 // 用户配置区域
 // =============================================================================
 const UUID = "06b65903-406d-4a41-8463-6fd5c0ee7798"; // 修改可用的uuid
-const WEB_PASSWORD = "你的登录密码";  //自己要修改自定义的登录密码
-const SUB_PASSWORD = "你的订阅密码";  // 自己要修改自定义的订阅密码
+const WEB_PASSWORD = "123456";  //自己要修改自定义的登录密码
+const SUB_PASSWORD = "123456";  // 自己要修改自定义的订阅密码
 const DEFAULT_PROXY_IP = atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0");  //可修改自定义的proxyip
 const DEFAULT_SUB_DOMAIN = atob("c3ViLmNtbGl1c3Nzcy5uZXQ=");  //可修改自定义的sub订阅器
 const NAVIGATION_URL = "https://nva.saas.ae.kg/"; // 🧭 导航按钮链接
