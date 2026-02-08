@@ -6,17 +6,27 @@
 
 - [项目介绍](#-项目介绍)
   - [配置加载优先级详解](#️-配置加载优先级详解)
-- [🔑 默认值配置格式说明（重要）](#-默认值配置格式说明重要)
+- [🔑 snippets专用用户配置区域说明（重要 - 必读）](#-snippets专用用户配置区域说明重要---必读)
+  - [配置区域在哪里？](#配置区域在哪里)
+  - [所有配置变量一览表](#所有配置变量一览表--仅参考-snippets不支持环境变量)
   - [支持的两种写法](#支持的两种写法)
-  - [Worker 版配置变量](#worker-版配置变量)
-  - [Snippets 版配置变量](#snippets-版配置变量)
-  - [如何修改 Base64 为明文](#如何修改-base64-为明文)
+  - [方式一：直接填明文（最简单，推荐新手）](#方式一直接填明文最简单推荐新手)
+  - [方式二：填 Base64 编码（保护隐私）](#方式二填-base64-编码保护隐私)
+    - [写法 A：let 变量 —— 直接填 Base64 字符串](#写法-alet-变量--直接填-base64-字符串自动识别)
+    - [写法 B：const 变量 —— 使用 atob 包裹](#写法-bconst-变量--使用-atob-包裹手动解码)
+    - [两种写法对比总结](#两种写法对比总结)
+    - [如何加密（明文 → Base64）](#-如何加密明文--base64-详细步骤)
+    - [如何解密（Base64 → 明文）](#-如何解密base64--明文-详细步骤)
+  - [完整修改示例](#完整修改示例)
+  - [常用 Base64 编码/解码速查](#常用-base64-编码解码速查)
+  - [哪些变量可以留空？](#哪些变量可以留空)
+  - [变量名与环境变量对照表（仅 Worker 版适用）](#变量名与环境变量对照表仅-worker-版适用)
 - [代码版本说明](#-代码版本说明)
 - [界面预览](#️-界面预览)
 - [懒人使用指南](#-懒人使用指南)
   - [图文教程](#-图文教程)
   - [后台管理使用说明](#️-后台管理使用说明)
-- [环境变量配置](#️-环境变量配置---部署必看)
+- [环境变量配置（仅 Worker 版）](#️-环境变量配置-variables----仅-worker-版适用)
   - [基础核心配置](#-基础核心配置)
   - [安全与通知配置](#️-安全与通知配置)
   - [节点来源配置](#-节点来源配置)
@@ -115,128 +125,427 @@
 
 ---
 
-## 🔑 默认值配置格式说明（重要）
+## 🔑 snippets专用用户配置区域说明（重要 - 必读）
 
-> **⚠️ 重要提示：代码中使用 Base64 编码的默认值变量，同时支持 Base64 和明文两种写法！**
+> **⚠️ snippets代码中的用户配置区域同时支持明文和 Base64 编码两种写法！**
 >
-> 用户可以根据自己的需求，选择使用 Base64 编码或直接使用明文。两种方式功能完全相同，不影响任何功能。
+> 你可以直接填写明文（如 `ProxyIP.US.CMLiussss.net`），也可以填写 Base64 编码后的值（如 `UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0`）。
+> 代码会**自动识别**并正确处理，两种方式功能完全相同，可以混用。
+
+---
+
+### 配置区域在哪里？
+
+打开代码文件（`snippets.js` 或 `snippets.txt`），**第 3 ~ 19 行**就是用户配置区域：
+
+以下为示例 方便用户清楚修改每一处地方：
+
+```javascript
+// 用户配置区域（支持明文或Base64，自动识别）
+const UUID = "06b65903-406d-4a41-8463-6fd5c0ee7798"; // 可用的uuid
+const WP = "123456";  // 登录密码
+const SUB_PWD = "123456";  // 订阅密码
+let PIP = "ProxyIP.US.CMLiussss.net";  // 自定义的中转ip
+let SUB = "sub.cmliussss.net";  // 自定义的订阅源
+const NU = "https://nva.saas.ae.kg/"; // 🧭 导航按钮链接
+const TG = "https://t.me/zyssadmin";   // 群组
+const PC = "https://kaic.hidns.co/";  // 中转检测站
+let SUBAPI = "https://subapi.cmliussss.net";  // 自定义后端api
+let SUBINI = "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini"; // 自定义订阅配置转换ini
+const SBV12 = atob("...");  // 禁止修改
+const SBV11 = atob("...");  // 禁止修改
+const BT = "";  // TG Bot Token
+const CI = "";  // TG Chat ID
+const AI = "";  // 管理员IP白名单
+//结束
+```
+
+> **说明**：`PIP`、`SUB`、`SUBAPI`、`SUBINI` 这 4 个变量使用 `let` 声明，因为代码在 `//结束` 下方有一行自动检测函数 `_D`，会判断你填的是明文还是 Base64，自动处理。其他变量使用 `const` 声明，直接填写明文即可。
+
+---
+
+### 所有配置变量一览表  【仅参考 snippets不支持环境变量】
+
+| 变量名 | 声明方式 | 用途 | 当前默认值 | 支持 Base64 | 可否修改 |
+|--------|---------|------|-----------|:-----------:|:-------:|
+| `UUID` | `const` | 用户 UUID | `06b65903-406d-4a41-8463-6fd5c0ee7798` | ❌ | ✅ 必改 |
+| `WP` | `const` | 后台登录密码 | `123456` | ❌ | ✅ 必改 |
+| `SUB_PWD` | `const` | 订阅路径密码 | `123456` | ❌ | ✅ 必改 |
+| `PIP` | `let` | ProxyIP 中转地址 | `ProxyIP.US.CMLiussss.net` | ✅ | ✅ 可改 |
+| `SUB` | `let` | 上游订阅器域名 | `sub.cmliussss.net` | ✅ | ✅ 可改 |
+| `NU` | `const` | 登录页导航链接 | `https://nva.saas.ae.kg/` | ❌ | ✅ 可改 |
+| `TG` | `const` | Telegram 群组链接 | `https://t.me/zyssadmin` | ❌ | ✅ 可改 |
+| `PC` | `const` | ProxyIP 检测站链接 | `https://kaic.hidns.co/` | ❌ | ✅ 可改 |
+| `SUBAPI` | `let` | 订阅转换后端 API | `https://subapi.cmliussss.net` | ✅ | ✅ 可改 |
+| `SUBINI` | `let` | Clash 配置模板 URL | ACL4SSR 配置链接 | ✅ | ✅ 可改 |
+| `SBV12` | `const` | Sing-box v1.12 配置 | sinspired 模板链接 | — | ❌ 禁止修改 |
+| `SBV11` | `const` | Sing-box v1.11 配置 | sinspired 模板链接 | — | ❌ 禁止修改 |
+| `BT` | `const` | TG Bot Token | （空） | ❌ | ✅ 可改 |
+| `CI` | `const` | TG Chat ID | （空） | ❌ | ✅ 可改 |
+| `AI` | `const` | 管理员 IP 白名单 | （空） | ❌ | ✅ 可改 |
+
+> **提示**：只有 `let` 声明的 4 个变量（`PIP`、`SUB`、`SUBAPI`、`SUBINI`）支持 Base64 自动识别。其他 `const` 变量直接填明文即可。
+
+---
 
 ### 支持的两种写法
 
+代码内置了**智能识别函数 `_D`**，会自动判断你填的是明文还是 Base64：
+
 | 写法 | 示例 | 说明 |
 |------|------|------|
-| **Base64 编码** | `atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0")` | 防止 GitHub 搜索和爬虫直接匹配敏感域名 |
-| **明文** | `"ProxyIP.US.CMLiussss.net"` | 直观易读，方便修改 |
+| **明文（推荐新手使用）** | `"ProxyIP.US.CMLiussss.net"` | 直接填写，简单直观，所见即所得 |
+| **Base64 编码（保护隐私）** | `"UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0"` | 防止 GitHub 搜索到敏感域名 |
 
-**两种写法在运行时效果完全相同**，JavaScript 会在代码执行时自动解码 Base64，最终得到相同的字符串值。
+**自动识别原理**：
+1. 代码尝试对你填的值执行 `atob()` 解码
+2. 如果解码成功且结果中**不含控制字符**（`\x00-\x1f`）→ 认为是 Base64，使用解码后的值
+3. 如果解码失败（`atob()` 报错）→ 认为是明文，直接使用原值
+4. 如果解码结果含控制字符（乱码）→ 认为是明文，直接使用原值
+
+> **简单理解**：你填什么都行，代码会自动判断。填明文就用明文，填 Base64 就自动解码。
 
 ---
 
-### Worker 版配置变量
+### 方式一：直接填明文（最简单，推荐新手）
 
-**文件：`_worker.js` / `worker测试.txt`**
-
-以下变量支持 Base64 或明文两种格式：
-
-| 变量名 | 用途 | 当前默认值（Base64 解码后） |
-|--------|------|---------------------------|
-| `DEFAULT_PROXY_IP` | 默认 ProxyIP 地址 | `ProxyIP.US.CMLiussss.net` |
-| `DEFAULT_SUB_DOMAIN` | 默认订阅器域名 | `sub.cmliussss.net` |
-| `DEFAULT_CONVERTER` | 默认订阅转换后端 | `https://subapi.cmliussss.net` |
-| `CLASH_CONFIG` | Clash 配置模板 URL | ACL4SSR 配置链接 |
-| `SINGBOX_CONFIG_V12` | Sing-box v1.12 配置 | sinspired 模板链接 |
-| `SINGBOX_CONFIG_V11` | Sing-box v1.11 配置 | sinspired 模板链接 |
-
-**代码示例（Worker 版）：**
+直接把你的内容填进引号里，不需要任何编码操作：
 
 ```javascript
-// 方式一：Base64 编码（当前默认）
-const DEFAULT_PROXY_IP = atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0"); // 支持多ProxyIP，使用逗号分隔
-const DEFAULT_SUB_DOMAIN = atob("c3ViLmNtbGl1c3Nzcy5uZXQ=");      // 支持多订阅域名，使用逗号分隔
-const DEFAULT_CONVERTER = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA=="); // 支持多转换器，使用逗号分隔
-
-// 方式二：明文（用户可改成这样）
-const DEFAULT_PROXY_IP = "你的proxyip地址";     // 支持多ProxyIP，使用逗号分隔
-const DEFAULT_SUB_DOMAIN = "你的sub订阅器域名";  // 支持多订阅域名，使用逗号分隔
-const DEFAULT_CONVERTER = "https://你的转换后端"; // 支持多转换器，使用逗号分隔
+// 用户配置区域（支持明文或Base64，自动识别）
+const UUID = "你的UUID";
+const WP = "你的登录密码";
+const SUB_PWD = "你的订阅密码";
+let PIP = "cf.090227.xyz";                              // 直接填域名
+let SUB = "sub.cmliussss.net";                           // 直接填域名
+const NU = "https://nva.saas.ae.kg/";                    // 直接填URL
+const TG = "https://t.me/zyssadmin";                     // 直接填URL
+const PC = "https://kaic.hidns.co/";                     // 直接填URL
+let SUBAPI = "https://subapi.cmliussss.net";             // 直接填完整URL
+let SUBINI = "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini";
 ```
 
 ---
 
-### Snippets 版配置变量
+### 方式二：填 Base64 编码（保护隐私）
 
-**文件：`snippets.js` / `snippets测试.txt`**
+如果你的代码会公开到 GitHub，建议使用 Base64 编码，防止域名被搜索引擎和爬虫匹配到。
 
-以下变量支持 Base64 或明文两种格式：
+代码中有**两种 Base64 写法**，根据变量的声明方式不同而不同：
 
-| 变量名 | 用途 | 当前默认值（Base64 解码后） |
-|--------|------|---------------------------|
-| `DEFAULT_PROXY_IP` | 默认 ProxyIP 地址 | `ProxyIP.US.CMLiussss.net` |
-| `DEFAULT_SUB_DOMAIN` | 默认订阅器域名 | `sub.cmliussss.net` |
-| `DEFAULT_CONVERTER` | 默认订阅转换后端 | `https://subapi.cmliussss.net` |
-| `CLASH_CONFIG` | Clash 配置模板 URL | ACL4SSR 配置链接 |
-| `SINGBOX_CONFIG_V12` | Sing-box v1.12 配置 | sinspired 模板链接 |
-| `SINGBOX_CONFIG_V11` | Sing-box v1.11 配置 | sinspired 模板链接 |
+---
 
-**代码示例（Snippets 版）：**
+#### 写法 A：`let` 变量 —— 直接填 Base64 字符串（自动识别）
+
+适用于：`PIP`、`SUB`、`SUBAPI`、`SUBINI` 这 4 个 `let` 声明的变量。
+
+**原理**：代码在 `//结束` 下方有自动检测函数 `_D`，会自动判断你填的是明文还是 Base64，无需手动写 `atob()`。
+
+**步骤：**
+
+1. 打开浏览器，按 `F12` 打开控制台
+2. 输入 `btoa("你的内容")` 获取 Base64 编码
+3. 把结果直接填入引号中
 
 ```javascript
-// 方式一：Base64 编码（当前默认）
-const DEFAULT_PROXY_IP = atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0");  //可修改自定义的proxyip
-const DEFAULT_SUB_DOMAIN = atob("c3ViLmNtbGl1c3Nzcy5uZXQ=");  //可修改自定义的sub订阅器
-const DEFAULT_CONVERTER = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==");  //可修改自定义后端api
-const CLASH_CONFIG = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2NtbGl1L0FDTDRTU1IvbWFpbi9DbGFzaC9jb25maWcvQUNMNFNTUl9PbmxpbmVfRnVsbF9NdWx0aU1vZGUuaW5p"); //可修改自定义订阅配置转换ini
-const SINGBOX_CONFIG_V12 = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NpbnNwaXJlZC9zdWItc3RvcmUtdGVtcGxhdGUvbWFpbi8xLjEyLngvc2luZy1ib3guanNvbg=="); //禁止修改 优先使用1.12 后用1.11
-const SINGBOX_CONFIG_V11 = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NpbnNwaXJlZC9zdWItc3RvcmUtdGVtcGxhdGUvbWFpbi8xLjExLngvc2luZy1ib3guanNvbg=="); //禁止修改
+// 第 1 步：在浏览器控制台获取 Base64
+btoa("ProxyIP.US.CMLiussss.net")
+// 输出: "UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0"
 
-// 方式二：明文（用户可改成这样）
-const DEFAULT_PROXY_IP = "你的proxyip地址";  //可修改自定义的proxyip
-const DEFAULT_SUB_DOMAIN = "你的sub订阅器域名";  //可修改自定义的sub订阅器
-const DEFAULT_CONVERTER = "https://你的转换后端";  //可修改自定义后端api
-const CLASH_CONFIG = "https://你的clash配置链接"; //可修改自定义订阅配置转换ini
-const SINGBOX_CONFIG_V12 = "https://你的singbox配置链接"; //可修改singbox的json配置
-const SINGBOX_CONFIG_V11 = "https://你的singbox配置链接"; //可修改singbox的json配置
+// 第 2 步：直接填入代码（不需要写 atob）
+let PIP = "UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0";  // 代码会自动识别并解码
+```
+
+**更多示例：**
+
+```javascript
+// 明文和 Base64 都可以，代码自动识别
+let PIP = "ProxyIP.US.CMLiussss.net";           // ✅ 明文写法
+let PIP = "UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0";  // ✅ Base64写法，效果完全相同
+
+let SUB = "sub.cmliussss.net";                   // ✅ 明文写法
+let SUB = "c3ViLmNtbGl1c3Nzcy5uZXQ=";           // ✅ Base64写法
+
+let SUBAPI = "https://subapi.cmliussss.net";     // ✅ 明文写法
+let SUBAPI = "aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==";  // ✅ Base64写法
+
+let SUBINI = "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini";  // ✅ 明文写法
+let SUBINI = "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2NtbGl1L0FDTDRTU1IvbWFpbi9DbGFzaC9jb25maWcvQUNMNFNTUl9PbmxpbmVfRnVsbF9NdWx0aU1vZGUuaW5p";  // ✅ Base64写法
 ```
 
 ---
 
-### 如何修改 Base64 为明文
+#### 写法 B：`const` 变量 —— 使用 `atob("...")` 包裹（手动解码）
 
-**步骤 1：找到要修改的变量**
+适用于：`NU`、`TG`、`PC`、`SUBAPI`、`SUBINI` 等任何 `const` 声明的变量，或者你想确保 100% 使用 Base64 解码的场景。
 
-在代码顶部的「用户配置区域」找到使用 `atob()` 的变量。
+**原理**：`atob()` 是 JavaScript 内置函数，代码运行时会自动把 Base64 解码为明文。
 
-**步骤 2：解码 Base64 查看原始值（可选）**
+**步骤：**
 
-如果想知道当前 Base64 编码的内容，可以在浏览器控制台执行：
+1. 打开浏览器，按 `F12` 打开控制台
+2. 输入 `btoa("你的内容")` 获取 Base64 编码
+3. 在代码中用 `atob("...")` 包裹
 
 ```javascript
-// 示例：解码 DEFAULT_PROXY_IP
+// 第 1 步：在浏览器控制台获取 Base64
+btoa("https://subapi.cmliussss.net")
+// 输出: "aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA=="
+
+// 第 2 步：用 atob() 包裹填入代码
+const SUBAPI = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==");  // 自定义后端api
+```
+
+**更多示例：**
+
+```javascript
+// 使用 atob() 包裹的写法
+const SUBAPI = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==");  // 自定义后端api
+const SUBINI = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2NtbGl1L0FDTDRTU1IvbWFpbi9DbGFzaC9jb25maWcvQUNMNFNTUl9PbmxpbmVfRnVsbF9NdWx0aU1vZGUuaW5p");  // 自定义订阅配置转换ini
+const SBV12 = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NpbnNwaXJlZC9zdWItc3RvcmUtdGVtcGxhdGUvbWFpbi8xLjEyLngvc2luZy1ib3guanNvbg==");  // 禁止修改
+const SBV11 = atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3NpbnNwaXJlZC9zdWItc3RvcmUtdGVtcGxhdGUvbWFpbi8xLjExLngvc2luZy1ib3guanNvbg==");  // 禁止修改
+```
+
+> **注意**：使用 `atob()` 写法时，变量必须用 `const` 声明（不能用 `let`），否则会被 `_D` 函数二次处理导致出错。
+
+---
+
+#### 两种写法对比总结
+
+| 对比项 | 写法 A：直接填 Base64 | 写法 B：`atob("...")` 包裹 |
+|--------|---------------------|--------------------------|
+| **适用变量** | `let` 声明的 4 个：PIP、SUB、SUBAPI、SUBINI | `const` 声明的所有变量 |
+| **代码格式** | `let PIP = "Base64字符串";` | `const SUBAPI = atob("Base64字符串");` |
+| **是否支持明文** | ✅ 明文和 Base64 都支持 | ❌ 只能填 Base64 |
+| **解码方式** | `_D` 函数自动识别解码 | `atob()` 直接解码 |
+| **推荐场景** | 新手、想灵活切换明文/Base64 | 确保加密、代码公开到 GitHub |
+
+---
+
+#### 🔒 如何加密（明文 → Base64）—— 详细步骤
+
+**方法 1：浏览器控制台（推荐，最方便）**
+
+1. 打开任意网页（比如百度、Google）
+2. 按键盘 `F12` 键，打开浏览器开发者工具
+3. 点击顶部的 **Console（控制台）** 标签
+4. 在控制台输入以下命令，然后按 **回车**：
+
+```javascript
+btoa("ProxyIP.US.CMLiussss.net")
+```
+
+5. 控制台会输出加密后的结果：
+
+```
+'UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0'
+```
+
+6. 复制这个结果（不含引号），根据变量类型选择填入方式：
+
+```javascript
+// 写法 A：let 变量 —— 直接填 Base64 字符串
+let PIP = "UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0";
+
+// 写法 B：const 变量 —— 用 atob() 包裹
+const SUBAPI = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==");
+```
+
+**更多加密示例：**
+
+```javascript
+// 在浏览器控制台依次输入：
+
+btoa("sub.cmliussss.net")
+// 输出: "c3ViLmNtbGl1c3Nzcy5uZXQ="
+
+btoa("https://subapi.cmliussss.net")
+// 输出: "aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA=="
+
+btoa("https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini")
+// 输出: "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2NtbGl1L0FDTDRTU1IvbWFpbi9DbGFzaC9jb25maWcvQUNMNFNTUl9PbmxpbmVfRnVsbF9NdWx0aU1vZGUuaW5p"
+```
+
+**方法 2：在线工具**
+
+1. 打开任意 Base64 在线编码网站（搜索「Base64 在线编码」）
+2. 在输入框粘贴你的明文内容（如 `sub.cmliussss.net`）
+3. 点击「编码」按钮
+4. 复制输出的 Base64 字符串
+5. 填入代码中
+
+**方法 3：命令行（适合开发者）**
+
+```bash
+# Linux / macOS
+echo -n "sub.cmliussss.net" | base64
+# 输出: c3ViLmNtbGl1c3Nzcy5uZXQ=
+
+# Windows PowerShell
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("sub.cmliussss.net"))
+# 输出: c3ViLmNtbGl1c3Nzcy5uZXQ=
+```
+
+---
+
+#### 🔓 如何解密（Base64 → 明文）—— 详细步骤
+
+当你看到代码中已有的 Base64 字符串，想知道它的真实内容时：
+
+**方法 1：浏览器控制台（推荐）**
+
+1. 按 `F12` 打开浏览器开发者工具
+2. 点击 **Console（控制台）** 标签
+3. 输入以下命令，按 **回车**：
+
+```javascript
 atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0")
-// 输出: "ProxyIP.US.CMLiussss.net"
 ```
 
-**步骤 3：直接替换为明文**
+4. 控制台输出真实内容：
+
+```
+'ProxyIP.US.CMLiussss.net'
+```
+
+**更多解密示例：**
 
 ```javascript
-// 修改前（Base64）
-const DEFAULT_PROXY_IP = atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0");
+// 在浏览器控制台依次输入：
 
-// 修改后（明文）
-const DEFAULT_PROXY_IP = "你想要的proxyip地址";
+atob("c3ViLmNtbGl1c3Nzcy5uZXQ=")
+// 输出: "sub.cmliussss.net"
+
+atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==")
+// 输出: "https://subapi.cmliussss.net"
+
+atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2NtbGl1L0FDTDRTU1IvbWFpbi9DbGFzaC9jb25maWcvQUNMNFNTUl9PbmxpbmVfRnVsbF9NdWx0aU1vZGUuaW5p")
+// 输出: "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini"
 ```
 
-**步骤 4：保存并部署**
+**方法 2：在线工具**
 
-修改完成后保存代码，重新部署即可生效。
+1. 打开任意 Base64 在线解码网站（搜索「Base64 在线解码」）
+2. 粘贴 Base64 字符串
+3. 点击「解码」按钮
+4. 查看输出的明文内容
+
+**方法 3：命令行**
+
+```bash
+# Linux / macOS
+echo "c3ViLmNtbGl1c3Nzcy5uZXQ=" | base64 -d
+# 输出: sub.cmliussss.net
+
+# Windows PowerShell
+[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("c3ViLmNtbGl1c3Nzcy5uZXQ="))
+# 输出: sub.cmliussss.net
+```
 
 ---
 
-**💡 小贴士：**
+### 完整修改示例
 
-- 如果你想保持隐私（防止 GitHub 搜索到你的域名），建议继续使用 Base64 编码
-- 如果你只是自用且不公开代码，使用明文更方便修改和维护
-- 两种方式可以混用，比如敏感域名用 Base64，普通配置用明文
+假设你要把所有配置改成自己的：
+
+```javascript
+// 用户配置区域（支持明文或Base64，自动识别）
+const UUID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"; // 改成你自己的 UUID
+const WP = "MyPassword888";   // 改成你的登录密码
+const SUB_PWD = "mysub";      // 改成你的订阅密码
+
+// ===== PIP / SUB / SUBAPI / SUBINI 支持明文或Base64两种写法，任选其一 =====
+
+// 写法A：明文（推荐新手）
+let PIP = "cf.090227.xyz";                              // 直接填你的 ProxyIP
+let SUB = "mysub.example.com";                           // 直接填你的订阅器域名
+let SUBAPI = "https://api.v1.mk";                       // 直接填你的转换后端
+let SUBINI = "https://raw.githubusercontent.com/...";    // 直接填你的配置链接
+
+// 写法B：Base64（保护隐私，二选一即可）
+// let PIP = "Y2YuMDkwMjI3Lnh5eg==";                    // btoa("cf.090227.xyz") 的结果
+// let SUB = "bXlzdWIuZXhhbXBsZS5jb20=";                // btoa("mysub.example.com") 的结果
+// let SUBAPI = "aHR0cHM6Ly9hcGkudjEubWs=";             // btoa("https://api.v1.mk") 的结果
+
+// ===== 以下变量直接填明文，不支持 Base64 =====
+
+const NU = "https://nva.saas.ae.kg/";                    // 导航链接
+const TG = "https://t.me/yourgroup";                     // 群组链接
+const PC = "https://kaic.hidns.co/";                     // 检测站
+
+const SBV12 = atob("...");  // 禁止修改
+const SBV11 = atob("...");  // 禁止修改
+
+const BT = "123456789:ABCdefGHIjklMNOpqrsTUVwxyz";      // TG Bot Token
+const CI = "987654321";                                   // TG Chat ID
+const AI = "1.2.3.4";                                     // 管理员IP白名单
+//结束
+```
+
+---
+
+### 常用 Base64 编码/解码速查
+
+| 操作 | 浏览器控制台命令 | 说明 |
+|------|-----------------|------|
+| **加密（明文→Base64）** | `btoa("你的内容")` | 把明文转成 Base64 |
+| **解密（Base64→明文）** | `atob("Base64字符串")` | 查看 Base64 的真实内容 |
+
+**常用默认值对照表：**
+
+| 变量 | Base64 编码值 | 明文值 |
+|------|--------------|--------|
+| `PIP` | `UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0` | `ProxyIP.US.CMLiussss.net` |
+| `SUB` | `c3ViLmNtbGl1c3Nzcy5uZXQ=` | `sub.cmliussss.net` |
+| `SUBAPI` | `aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA==` | `https://subapi.cmliussss.net` |
+
+> **注意**：Base64 只支持 ASCII 字符（英文、数字、符号）。如果内容包含中文，请使用 `btoa(unescape(encodeURIComponent("中文内容")))` 进行编码。不过一般配置中都是英文域名和 URL，直接用 `btoa()` 即可。
+
+> **在线工具**：如果不方便用浏览器控制台，也可以搜索「Base64 在线编码解码」使用网页工具。
+
+---
+
+### 哪些变量可以留空？
+
+| 变量 | 留空效果 |
+|------|---------|
+| `PIP` | 不使用 ProxyIP，使用默认直连 |
+| `SUB` | 不使用上游订阅，降级使用本地 ADD 节点 |
+| `SUBAPI` | 不使用订阅转换（Clash/Sing-box 客户端可能无法使用） |
+| `SUBINI` | 使用代码内置的默认 Clash 配置模板 |
+| `NU` | 登录页不显示「导航」按钮 |
+| `TG` | 登录页不显示「交流群」链接 |
+| `PC` | 不使用 ProxyIP 检测功能 |
+| `BT` / `CI` | 不启用 Telegram 通知 |
+| `AI` | 不设置静态白名单 IP |
+
+### 变量名与环境变量对照表
+
+> **⚠️ 两套代码的配置方式不同：**
+> - **`snippets.js`（Snippets 版）**：**纯硬编码**，不支持环境变量，所有配置只能在代码顶部的用户配置区域直接修改
+> - **`_worker.js`（Worker 版）**：支持环境变量，环境变量优先级高于代码硬编码
+
+代码中使用了简短的变量名，以下是与 Worker 版环境变量的对照关系：
+
+| 代码变量名 | Worker 环境变量名 | 说明 | Snippets 配置方式 |
+|-----------|------------------|------|------------------|
+| `UUID` | `UUID` | 用户 UUID | 直接改代码 |
+| `WP` | `WEB_PASSWORD` | 后台登录密码 | 直接改代码 |
+| `SUB_PWD` | `SUB_PASSWORD` | 订阅路径密码 | 直接改代码 |
+| `PIP` | `PROXYIP` | ProxyIP 中转地址 | 直接改代码（支持 Base64） |
+| `SUB` | `SUB_DOMAIN` | 上游订阅器域名 | 直接改代码（支持 Base64） |
+| `SUBAPI` | `SUBAPI` | 订阅转换后端 API | 直接改代码（支持 Base64） |
+| `SUBINI` | — | Clash 配置模板 | 直接改代码（支持 Base64） |
+| `NU` | — | 导航链接 | 直接改代码 |
+| `TG` | `TG_GROUP_URL` | 群组链接 | 直接改代码 |
+| `PC` | `PROXY_CHECK_URL` | 检测站链接 | 直接改代码 |
+| `BT` | `TG_BOT_TOKEN` | TG Bot Token | 直接改代码 |
+| `CI` | `TG_CHAT_ID` | TG Chat ID | 直接改代码 |
+| `AI` | `WL_IP` | 管理员 IP 白名单 | 直接改代码 |
+
+**Worker 版配置优先级**：环境变量 > D1 数据库 > KV 存储 > 代码硬编码
+
+**Snippets 版配置方式**：直接修改代码顶部用户配置区域（唯一方式）
 
 ---
 
@@ -247,8 +556,10 @@ const DEFAULT_PROXY_IP = "你想要的proxyip地址";
 *   **Worker / Pages 部署 (推荐)**：请使用 **`_worker.js`** 代码。
     *   *UI 特效：高级毛玻璃风格*
     *   *新增特性：支持 D1 数据库高速读写、后台动态配置、强制安全登录*
+    *   *配置方式：**支持环境变量**，环境变量 > D1 > KV > 代码硬编码*
 *   **Snippets 部署**：请使用 **`snippets.js`** 代码。 【也支持worker部署】
     *   *UI 特效：紫色渐变风格*
+    *   *配置方式：**纯硬编码**，不支持环境变量，直接修改代码顶部用户配置区域*
 
 ---
 
@@ -268,8 +579,8 @@ const DEFAULT_PROXY_IP = "你想要的proxyip地址";
 
 ## 🚀 懒人使用指南
 
-> * **Snippets代码**：所有数据都需要在代码顶部【用户配置区域】进行修改
-> * **Worker代码**：环境变量第一优先级，第二优先级为代码硬编码【在用户配置区域进行修改】
+> * **Snippets代码（硬编码）**：不支持环境变量，所有数据都需要在代码顶部【用户配置区域】直接修改
+> * **Worker代码（环境变量）**：支持环境变量，环境变量第一优先级，第二优先级为代码硬编码【在用户配置区域进行修改】
 > * **默认使用SUB订阅器为优先**：有的人喜欢本地ADD那些花里花俏，有的人喜欢SUB，自己改
 > * **默认什么都不改就是默认的**：我写入了支持proxyip作为节点，所以即便是默认值也依旧有一个节点使用
 > * **所有教程都在github写了说明**：我希望你认真查看每一处
@@ -286,7 +597,9 @@ const DEFAULT_PROXY_IP = "你想要的proxyip地址";
 
 ---
 
-## ⚙️ 环境变量配置 (Variables) - **🔥 部署必看**
+## ⚙️ 环境变量配置 (Variables) - **🔥 仅 Worker 版适用**
+
+> **⚠️ 本章节仅适用于 `_worker.js`（Worker / Pages 部署）。`snippets.js` 是纯硬编码版本，不支持环境变量，请直接修改代码顶部的用户配置区域。**
 
 **优先级顺序：环境变量 (Env) > D1 数据库 (后台保存) > KV 空间 > 代码默认配置**
 
@@ -1292,11 +1605,10 @@ fetch('https://your-worker.com?flag=add_whitelist', {
 - **TG 频道**：`https://t.me/cloudflareorg`
 
 **修改方法：**
-在代码顶部用户配置区域找到以下常量并修改：
+在代码顶部用户配置区域找到以下变量并修改：
 ```javascript
-const CLASH_CONFIG = "你的Clash配置URL";
-const SINGBOX_CONFIG_V12 = "你的Singbox配置URL";
-const PROXY_CHECK_URL = "你的检测网站URL";
+let SUBINI = "你的Clash配置URL";       // 或 Base64 编码
+const PC = "你的检测网站URL";
 ```
 
 ---
