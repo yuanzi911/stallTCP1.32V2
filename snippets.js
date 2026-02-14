@@ -1,11 +1,11 @@
 import/**/{/**/connect as $c/**/}/**/from/**/'cloudflare:sockets';const _=o=>$c(o);
 
 // 用户配置区域（用 ""+""  拆分）
-const UUID = "06b65903-406d-4a41-8463-6fd5c0ee7798"; // 可用的uuid
-const WP = "123456";  // 登录密码
-const SUB_PWD = "123456";  // 订阅密码
+const UUID = "c46ca761-c777-4b0d-8352-6ec5db2992e1"; // 可用的uuid
+const WP = "Xiaoxingxing#123";  // 登录密码
+const SUB_PWD = "c46ca761-c777-4b0d-8352-6ec5db2992e1";  // 订阅密码
 let PIP = 'Pro'+'xyIP.US.'+'cm'+'liussss.net';  // 自定义的中转ip
-let SUB = 'sub.'+'cm'+'liussss.net';  // 自定义的订阅源
+let SUB = 'sub.'+'215683.xyz';  // 自定义的订阅源
 const NU = "https://nva.saas.ae.kg/"; // 🧭 导航按钮链接
 const TG = "https://t.me/zyssadmin";   // 群组
 const PC = "https://kaic.hidns.co/";  // 中转检测站
@@ -13,8 +13,8 @@ let SUBAPI = 'https://su'+'bapi.'+'cm'+'liussss.net';  // 自定义后端api
 let SUBINI = 'https://raw.githubusercontent.com/'+'cm'+'liu/ACL4SSR/main/'+'Cl'+'ash/config/ACL4SSR_Online_Full_MultiMode.ini'; // 自定义订阅配置转换ini
 const SBV12 = 'https://raw.githubusercontent.com/sinspired/su'+'b-st'+'ore-template/main/1.12.x/si'+'ng-b'+'ox.json'; // 禁止修改
 const SBV11 = 'https://raw.githubusercontent.com/sinspired/su'+'b-st'+'ore-template/main/1.11.x/si'+'ng-b'+'ox.json'; // 禁止修改
-const BT = ""; // TG Bot Token
-const CI = "";  // TG Chat ID
+const BT = "8244608899:AAGbOjCui6eHzUprPbUs_D_BvF28NjXy5g4"; // TG Bot Token
+const CI = "6372914857";  // TG Chat ID
 const AI   = "";  // 管理员IP白名单
 //结束
 const MAX_PENDING=2*1024*1024,KEEPALIVE=15e3,STALL_TO=8e3,MAX_STALL=12,MAX_RECONN=24;
