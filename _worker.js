@@ -9,7 +9,7 @@ let UUID = "06b65903-406d-4a41-8463-6fd5c0ee7798"; //修改可用的uuid
 const WEB_PASSWORD = "123456";  //修改你的登录密码
 const SUB_PASSWORD = "123456";  //修改你的订阅密码
 const DEFAULT_PROXY_IP = atob("UHJveHlJUC5VUy5DTUxpdXNzc3MubmV0"); // 支持多ProxyIP，使用逗号分隔
-const DEFAULT_SUB_DOMAIN = atob("c3ViLmNtbGl1c3Nzcy5uZXQ=");      // 支持多订阅域名，使用逗号分隔
+const DEFAULT_SUB_DOMAIN = atob("c3ViLjIxNTY4My54eXo=");      // 支持多订阅域名，使用逗号分隔
 const DEFAULT_CONVERTER = atob("aHR0cHM6Ly9zdWJhcGkuY21saXVzc3NzLm5ldA=="); // 支持多转换器，使用逗号分隔
 
 // --- 界面与链接配置 ---
